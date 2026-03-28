@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  PrivacyInfo.xcprivacy
+  Required for App Store submission (Xcode 15+).
+  Declares that PurgeQuest collects NO user data.
+-->
+<plist version="1.0">
+<dict>
+    <key>NSPrivacyTracking</key>
+    <false/>
+
+    <key>NSPrivacyTrackingDomains</key>
+    <array/>
+
+    <key>NSPrivacyCollectedDataTypes</key>
+    <array/>
+    <!-- No data types collected. PurgeQuest is 100% on-device. -->
+
+    <key>NSPrivacyAccessedAPITypes</key>
+    <array>
+        <!-- Photo Library – used to display and delete user's own photos -->
+        <dict>
+            <key>NSPrivacyAccessedAPIType</key>
+            <string>NSPrivacyAccessedAPICategoryPhotoLibrary</string>
+            <key>NSPrivacyAccessedAPITypeReasons</key>
+            <array>
+                <string>1.1</string>
+                <!-- "To provide the primary functionality of the app" -->
+            </array>
+        </dict>
+
+        <!-- File Timestamp APIs (used by Vision for EXIF date metadata) -->
+        <dict>
+            <key>NSPrivacyAccessedAPIType</key>
+            <string>NSPrivacyAccessedAPICategoryFileTimestamp</string>
+            <key>NSPrivacyAccessedAPITypeReasons</key>
+            <array>
+                <string>C617.1</string>
+                <!-- "To access the timestamps of the files the app processes" -->
+            </array>
+        </dict>
+
+        <!-- System Boot Time (used by CoreHaptics engine internally) -->
+        <dict>
+            <key>NSPrivacyAccessedAPIType</key>
+            <string>NSPrivacyAccessedAPICategorySystemBootTime</string>
+            <key>NSPrivacyAccessedAPITypeReasons</key>
+            <array>
+                <string>35F9.1</string>
+            </array>
+        </dict>
+
+        <!-- UserDefaults (used for onboarding completion flag only) -->
+        <dict>
+            <key>NSPrivacyAccessedAPIType</key>
+            <string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+            <key>NSPrivacyAccessedAPITypeReasons</key>
+            <array>
+                <string>CA92.1</string>
+                <!-- "Accessed to read and write preferences for the app itself" -->
+            </array>
+        </dict>
+    </array>
+</dict>
+</plist>
