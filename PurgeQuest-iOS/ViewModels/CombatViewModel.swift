@@ -51,6 +51,10 @@ final class CombatViewModel {
         Task { await loadCurrentImage() }
     }
 
+    deinit {
+        imageLoadTask?.cancel()
+    }
+
     // ─── Image Loading ─────────────────────────────────────────────────────────
 
     func loadCurrentImage() async {
@@ -69,7 +73,8 @@ final class CombatViewModel {
             isLoadingImage = false
         }
 
-        // Preload next
+        // Preload next — cancel any in-flight preload first
+        imageLoadTask?.cancel()
         let nextIndex = room.currentPhotoIndex + 1
         if nextIndex < room.assetLocalIDs.count {
             let nextID = room.assetLocalIDs[nextIndex]
