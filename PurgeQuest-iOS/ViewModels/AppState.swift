@@ -19,6 +19,8 @@ final class AppState {
     var activeCombatSession: CombatSession?
     var pendingDeleteIDs: [String] = []
     var pendingDeleteBytes: Int64 = 0
+    var pendingDeleteSizesByID: [String: Int64] = [:]
+    var pendingDeleteMonsterType: String = ""
 
     // ─── Dungeon State ─────────────────────────────────────────────────────────
     var dungeonRooms: [DungeonRoom] = []
@@ -108,7 +110,7 @@ final class AppState {
             var sizes = group.assetByteSizes
             while !ids.isEmpty {
                 let batchIDs = Array(ids.prefix(roomSize))
-                let batchSizes = Array(sizes.prefix(batchSizes.count > 0 ? roomSize : 0))
+                let batchSizes = Array(sizes.prefix(roomSize))
                 ids = Array(ids.dropFirst(roomSize))
                 sizes = Array(sizes.dropFirst(roomSize))
 
@@ -146,38 +148,54 @@ final class AppState {
         let leveledUp = hero.addXP(session.totalXPThisRoom)
         if leveledUp { showLevelUp = true }
 
+        // Store context needed to record deletion — inserted only after confirmed delete succeeds
         if !toDelete.isEmpty {
-            // Record for undo window
+            var sizesByID: [String: Int64] = [:]
             for id in toDelete {
                 let idx = session.room.assetLocalIDs.firstIndex(of: id) ?? 0
                 let size = idx < session.room.assetByteSizes.count ? session.room.assetByteSizes[idx] : 0
-                let record = DeletedPhotoRecord(
-                    assetLocalID: id, fileSizeBytes: size,
-                    monsterType: session.monster.type.rawValue
-                )
-                modelContext.insert(record)
+                sizesByID[id] = size
             }
+            pendingDeleteSizesByID = sizesByID
+            pendingDeleteMonsterType = session.monster.type.rawValue
         }
     }
 
     func confirmDelete(modelContext: ModelContext) async {
         let ids = pendingDeleteIDs
+        let sizesByID = pendingDeleteSizesByID
+        let monsterType = pendingDeleteMonsterType
         guard !ids.isEmpty else { return }
         do {
             let deleted = try await PhotoLibraryService.shared.deleteAssets(localIDs: ids)
+            // Only record and advance once deletion is confirmed
+            for id in ids {
+                let record = DeletedPhotoRecord(
+                    assetLocalID: id,
+                    fileSizeBytes: sizesByID[id] ?? 0,
+                    monsterType: monsterType
+                )
+                modelContext.insert(record)
+            }
             showToast("\(deleted) photos purged from existence.")
+            clearPendingDelete()
+            advanceToNextRoom()
         } catch {
             showToast("Delete failed: \(error.localizedDescription)")
+            clearPendingDelete()
         }
-        pendingDeleteIDs = []
-        pendingDeleteBytes = 0
-        advanceToNextRoom()
     }
 
     func skipDelete() {
+        clearPendingDelete()
+        advanceToNextRoom()
+    }
+
+    private func clearPendingDelete() {
         pendingDeleteIDs = []
         pendingDeleteBytes = 0
-        advanceToNextRoom()
+        pendingDeleteSizesByID = [:]
+        pendingDeleteMonsterType = ""
     }
 
     func advanceToNextRoom() {

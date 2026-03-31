@@ -180,7 +180,11 @@ actor MLAnalysisService {
             request.recognitionLevel = .fast
             request.usesLanguageCorrection = false
             let handler = VNImageRequestHandler(cgImage: image, options: [:])
-            try? handler.perform([request])
+            do {
+                try handler.perform([request])
+            } catch {
+                continuation.resume(returning: false)
+            }
         }
     }
 
@@ -217,7 +221,11 @@ actor MLAnalysisService {
                 continuation.resume(returning: req.results?.first as? VNFeaturePrintObservation)
             }
             let handler = VNImageRequestHandler(cgImage: image, options: [:])
-            try? handler.perform([request])
+            do {
+                try handler.perform([request])
+            } catch {
+                continuation.resume(returning: nil)
+            }
         }
     }
 
