@@ -93,13 +93,14 @@ struct DailyQuestGenerator {
                              gemReward: 10, xpReward: 75),
         ]
 
-        // Pick 3 deterministic quests from pool
-        let indices = [
-            Int(drand48() * Double(pool.count)),
-            (Int(drand48() * Double(pool.count)) + 2) % pool.count,
-            (Int(drand48() * Double(pool.count)) + 4) % pool.count,
-        ]
-        return Array(Set(indices)).prefix(3).map { pool[$0] }
+        // Pick 3 deterministic, distinct quests via a seeded Fisher-Yates shuffle.
+        // Using Set(indices) before was wrong — collisions reduced the count to < 3.
+        var poolIndices = Array(0..<pool.count)
+        for i in stride(from: poolIndices.count - 1, through: 1, by: -1) {
+            let j = Int(drand48() * Double(i + 1))
+            poolIndices.swapAt(i, j)
+        }
+        return poolIndices.prefix(3).map { pool[$0] }
     }
 }
 

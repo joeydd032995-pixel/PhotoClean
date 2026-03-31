@@ -238,7 +238,11 @@ actor MLAnalysisService {
         for i in 0..<withPrint.count {
             for j in (i+1)..<withPrint.count {
                 var dist: Float = 0
-                try? withPrint[i].1.computeDistance(&dist, to: withPrint[j].1)
+                // Only treat as duplicates when the distance computation succeeds.
+                // If it throws, dist stays 0 which would be a false positive.
+                guard (try? withPrint[i].1.computeDistance(&dist, to: withPrint[j].1)) != nil else {
+                    continue
+                }
                 if dist < threshold {
                     duplicates.insert(withPrint[i].0)
                     duplicates.insert(withPrint[j].0)
@@ -285,12 +289,36 @@ actor MLAnalysisService {
             opts.resizeMode = .fast
             opts.isNetworkAccessAllowed = false
             let target = CGSize(width: 512, height: 512)
+            // Track whether the continuation has already been resumed so we
+            // never double-resume if the manager fires two callbacks.
+            var resumed = false
             PHImageManager.default().requestImage(
                 for: asset, targetSize: target,
                 contentMode: .aspectFit, options: opts
             ) { image, info in
                 let degraded = (info?[PHImageResultIsDegradedKey] as? Bool) ?? false
-                if !degraded { continuation.resume(returning: image?.cgImage) }
+                let cancelled = (info?[PHImageCancelledKey] as? Bool) ?? false
+                let failed = info?[PHImageErrorKey] != nil
+
+                // Prefer the full-res callback; fall back to degraded if the
+                // request is cancelled, errored, or this is the final callback.
+                if !degraded && !resumed {
+                    resumed = true
+                    continuation.resume(returning: image?.cgImage)
+                } else if (cancelled || failed) && !resumed {
+                    resumed = true
+                    continuation.resume(returning: nil)
+                } else if degraded && !resumed {
+                    // Degraded image may be the only result (e.g. iCloud asset
+                    // not downloaded). We schedule a final fallback so the
+                    // continuation is always resumed.
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        if !resumed {
+                            resumed = true
+                            continuation.resume(returning: image?.cgImage)
+                        }
+                    }
+                }
             }
         }
     }
