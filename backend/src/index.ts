@@ -1,7 +1,7 @@
 import "@vibecodeapp/proxy"; // DO NOT REMOVE OTHERWISE VIBECODE PROXY WILL NOT WORK
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import "./env";
+import { env } from "./env";
 import { sampleRouter } from "./routes/sample";
 import { logger } from "hono/logger";
 
@@ -35,7 +35,7 @@ app.get("/health", (c) => c.json({ status: "ok" }));
 // Routes
 app.route("/api/sample", sampleRouter);
 
-const port = Number(process.env.PORT) || 3000;
+const port = env.PORT;
 
 export default {
   port,
