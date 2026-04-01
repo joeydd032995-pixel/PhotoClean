@@ -29,6 +29,11 @@ final class CombatViewModel {
     private var preloadedNextImage: UIImage? = nil
     private var imageLoadTask: Task<Void, Never>? = nil
 
+    // ─── Particle / visual effect triggers ────────────────────────────────────
+    var isMonsterDying: Bool = false
+    var showDeleteBurst: Bool = false
+    var showKeepBurst: Bool = false
+
     var monster: Monster { session.monster }
     var room: DungeonRoom { session.room }
     var combo: Int { session.combo }
@@ -124,6 +129,13 @@ final class CombatViewModel {
             swipeRotation = isDelete ? -20 : 20
         }
 
+        // Fire swipe burst at the moment the card starts flying off
+        if isDelete { showDeleteBurst = true } else { showKeepBurst = true }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
+            self.showDeleteBurst = false
+            self.showKeepBurst = false
+        }
+
         // Process after brief delay (card flying off)
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
             self.processDecision(assetID: assetID, isDelete: isDelete, hero: hero, appState: appState)
@@ -201,6 +213,8 @@ final class CombatViewModel {
     // ─── Room Completion ──────────────────────────────────────────────────────
 
     private func handleRoomComplete(hero: Hero, appState: AppState) {
+        // Trigger death burst when the monster was actually killed (not room-exhausted)
+        if session.monster.isDead { isMonsterDying = true }
         session.phase = .victory
         HapticService.shared.monsterDeath()
         hero.bossesDefeated += session.monster.type.isBoss ? 1 : 0
