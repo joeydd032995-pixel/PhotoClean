@@ -42,7 +42,8 @@ struct CombatView: View {
                 MonsterView(
                     monster: combatVM.monster,
                     isAnimatingDamage: combatVM.isAnimatingDamage,
-                    attackLine: combatVM.showAttackLine ? combatVM.attackLineText : nil
+                    attackLine: combatVM.showAttackLine ? combatVM.attackLineText : nil,
+                    isDying: combatVM.isMonsterDying
                 )
                 .offset(x: combatVM.monsterShakeOffset.width, y: combatVM.monsterShakeOffset.height)
                 .padding(.bottom, 8)
@@ -70,6 +71,20 @@ struct CombatView: View {
                             .onChanged { combatVM.onDragChanged($0) }
                             .onEnded { combatVM.onDragEnded($0, hero: hero, appState: appState, modelContext: modelContext) }
                     )
+
+                    // Swipe burst effects
+                    if combatVM.showDeleteBurst {
+                        ParticleBurstView(color: Color(hex: "#E84545"), count: 16, duration: 0.45)
+                            .frame(width: 320, height: 420)
+                            .transition(.opacity)
+                            .zIndex(11)
+                    }
+                    if combatVM.showKeepBurst {
+                        ParticleBurstView(color: Color(hex: "#4CAF50"), count: 12, duration: 0.45)
+                            .frame(width: 320, height: 420)
+                            .transition(.opacity)
+                            .zIndex(11)
+                    }
 
                     // XP Gain popup
                     if combatVM.showXPGain {

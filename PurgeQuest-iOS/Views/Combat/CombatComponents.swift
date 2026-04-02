@@ -8,6 +8,7 @@ struct MonsterView: View {
     let monster: Monster
     let isAnimatingDamage: Bool
     let attackLine: String?
+    var isDying: Bool = false
 
     @State private var idle = false
     @State private var enragePulse = false
@@ -69,7 +70,9 @@ struct MonsterView: View {
                             .foregroundStyle(.white.opacity(0.8))
                     }
                 }
-                .scaleEffect(idle ? 1.04 : 0.96)
+                .scaleEffect(isDying ? 0.01 : (idle ? 1.04 : 0.96))
+                .opacity(isDying ? 0 : 1)
+                .animation(.easeIn(duration: 0.35), value: isDying)
                 .animation(.easeInOut(duration: 1.8).repeatForever(autoreverses: true), value: idle)
 
                 // Enrage indicator
@@ -81,6 +84,12 @@ struct MonsterView: View {
                         .padding(.vertical, 3)
                         .background(Capsule().fill(Color.orange.opacity(0.2)))
                         .offset(y: 52)
+                }
+
+                // Death burst — particle explosion when monster is defeated
+                if isDying {
+                    ParticleBurstView(color: monster.type.tint, count: 22, duration: 0.65)
+                        .frame(width: 140, height: 140)
                 }
 
                 // Damage numbers (brief flash)

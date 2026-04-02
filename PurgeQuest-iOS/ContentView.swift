@@ -9,6 +9,7 @@ struct RootView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var appState = AppState()
     @State private var onboardingComplete = UserDefaults.standard.bool(forKey: "pq_onboarding_v1")
+    @State private var isInsertingHero = false
 
     var body: some View {
         Group {
@@ -42,19 +43,22 @@ struct RootView: View {
     }
 
     private func ensureHeroExists() {
-        if heroes.isEmpty {
-            let hero = Hero()
-            modelContext.insert(hero)
-            // Seed default achievements
-            AchievementDefinition.all.forEach { def in
-                let record = AchievementRecord(definitionID: def.id)
-                modelContext.insert(record)
-            }
-            // Seed default cosmetics
-            CosmeticItem.defaults.forEach { item in
-                modelContext.insert(item)
-            }
+        guard heroes.isEmpty && !isInsertingHero else { return }
+        isInsertingHero = true
+        let hero = Hero()
+        modelContext.insert(hero)
+        // Seed default achievements
+        AchievementDefinition.all.forEach { def in
+            let record = AchievementRecord(definitionID: def.id)
+            modelContext.insert(record)
         }
+        // Seed default cosmetics
+        CosmeticItem.defaults.forEach { item in
+            modelContext.insert(item)
+        }
+        // Flush immediately so the @Query reflects the new hero before any
+        // reactive onChange can fire and call ensureHeroExists() a second time.
+        try? modelContext.save()
     }
 }
 
@@ -94,7 +98,7 @@ struct MainTabView: View {
             }
         }
         .sheet(isPresented: $appState.showLevelUp) {
-            LevelUpView(level: hero.level)
+            LevelUpView(level: hero.level, hero: hero)
                 .presentationDetents([.medium])
                 .presentationBackground(.ultraThinMaterial)
         }

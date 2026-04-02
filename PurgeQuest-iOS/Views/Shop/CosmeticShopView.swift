@@ -13,7 +13,11 @@ struct CosmeticShopView: View {
 
     var filteredItems: [CosmeticItem] {
         items.filter { $0.type == selectedType }
-             .sorted { !$0.isUnlocked && $1.isUnlocked ? false : $0.gemCost < $1.gemCost }
+             .sorted {
+                 // Unlocked items first, then locked; within each group sort by cost.
+                 if $0.isUnlocked != $1.isUnlocked { return $0.isUnlocked && !$1.isUnlocked }
+                 return $0.gemCost < $1.gemCost
+             }
     }
 
     var body: some View {

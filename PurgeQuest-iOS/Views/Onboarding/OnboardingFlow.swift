@@ -298,7 +298,6 @@ struct OnboardingPermissionPage: View {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 struct OnboardingNextHint: View {
-    @State private var bounce = false
     var body: some View {
         VStack(spacing: 4) {
             Image(systemName: "chevron.right.2")

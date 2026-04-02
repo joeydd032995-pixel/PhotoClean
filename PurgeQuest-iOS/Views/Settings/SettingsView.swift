@@ -314,18 +314,28 @@ struct PrivacySection: View {
 
 struct LevelUpView: View {
     let level: Int
+    let hero: Hero
     @Environment(\.dismiss) private var dismiss
-    @State private var animate = false
+    @State private var animateIcon = false
+    @State private var showStats = false
 
     var body: some View {
         ZStack {
             Color.black.opacity(0.9).ignoresSafeArea()
 
+            // Confetti rains behind everything
+            ConfettiView()
+                .ignoresSafeArea()
+
             VStack(spacing: 24) {
                 Text("⚔️")
                     .font(.system(size: 80))
-                    .scaleEffect(animate ? 1.2 : 0.8)
-                    .animation(.spring(response: 0.5, dampingFraction: 0.4).repeatForever(autoreverses: true), value: animate)
+                    .scaleEffect(animateIcon ? 1.2 : 0.8)
+                    .animation(
+                        .spring(response: 0.5, dampingFraction: 0.4).repeatForever(autoreverses: true),
+                        value: animateIcon
+                    )
+                    .shadow(color: Color(hex: "#F7C948").opacity(0.8), radius: animateIcon ? 30 : 8)
 
                 VStack(spacing: 8) {
                     Text("LEVEL UP!")
@@ -338,20 +348,66 @@ struct LevelUpView: View {
                         .foregroundStyle(.white.opacity(0.9))
                 }
 
+                // Stat badges fly in from below after a short delay
+                if showStats {
+                    HStack(spacing: 20) {
+                        LevelUpStatBadge(icon: "❤️", label: "MAX HP", value: "+10")
+                        LevelUpStatBadge(icon: "⚔️", label: "ATK",    value: "+2")
+                    }
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
+
                 Button("Onward!") { dismiss() }
                     .font(.custom("Georgia Bold", size: 18))
                     .foregroundStyle(.black)
                     .padding(.horizontal, 40)
                     .padding(.vertical, 14)
                     .background(
-                        Capsule().fill(LinearGradient(colors: [Color(hex: "#F7C948"), Color(hex: "#E8A020")],
-                                                      startPoint: .leading, endPoint: .trailing))
+                        Capsule().fill(LinearGradient(
+                            colors: [Color(hex: "#F7C948"), Color(hex: "#E8A020")],
+                            startPoint: .leading, endPoint: .trailing
+                        ))
                     )
             }
+            .padding(.horizontal, 24)
         }
+        .animation(.spring(response: 0.5, dampingFraction: 0.7), value: showStats)
         .onAppear {
-            animate = true
+            animateIcon = true
             HapticService.shared.levelUp()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                showStats = true
+            }
         }
+    }
+}
+
+private struct LevelUpStatBadge: View {
+    let icon: String
+    let label: String
+    let value: String
+
+    var body: some View {
+        VStack(spacing: 6) {
+            Text(icon)
+                .font(.system(size: 28))
+            Text(value)
+                .font(.custom("Georgia Bold", size: 22))
+                .foregroundStyle(Color(hex: "#F7C948"))
+            Text(label)
+                .font(.custom("Georgia", size: 11))
+                .foregroundStyle(.secondary)
+                .tracking(2)
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 14)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(Color.white.opacity(0.08))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14)
+                        .stroke(Color(hex: "#F7C948").opacity(0.3), lineWidth: 1)
+                )
+        )
     }
 }
