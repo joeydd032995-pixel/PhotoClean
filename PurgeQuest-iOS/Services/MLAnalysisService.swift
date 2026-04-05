@@ -95,9 +95,13 @@ actor MLAnalysisService {
 
         async let blurry = detectBlur(image: image)
         async let screenshot = detectScreenshot(asset: asset, image: image)
-        async let quality = scoreQuality(image: image)
-        async let dark = detectDark(image: image)
         async let fp = generateFeaturePrint(image: image)
+
+        // Compute brightness once and derive both quality score and dark flag
+        // from the single value — avoids scanning the full image twice.
+        let brightness = averageBrightness(of: image)
+        let quality    = brightnessToQuality(brightness)
+        let isDark     = brightness < 0.10
 
         let fiveYearsAgo = Calendar.current.date(byAdding: .year, value: -5, to: .now)!
         let isOld = (asset.creationDate ?? .now) < fiveYearsAgo
@@ -107,11 +111,16 @@ actor MLAnalysisService {
             isBlurry: await blurry,
             isScreenshot: await screenshot,
             isDuplicate: false,          // set later after clustering
-            qualityScore: await quality,
+            qualityScore: quality,
             isOld: isOld,
-            isDark: await dark,
+            isDark: isDark,
             featurePrint: await fp
         )
+    }
+
+    private func brightnessToQuality(_ brightness: Double) -> Double {
+        if brightness < 0.05 || brightness > 0.95 { return 0.2 }
+        return min(1.0, (brightness / 0.7) * 0.8 + 0.2)
     }
 
     // ─── Blur Detection (Laplacian variance via vImage) ───────────────────────
@@ -188,15 +197,7 @@ actor MLAnalysisService {
         }
     }
 
-    // ─── Quality Score via VNDetectFaceRectanglesRequest + brightness ─────────
-
-    private func scoreQuality(image: CGImage) async -> Double {
-        // Use average brightness as a proxy for quality
-        let brightness = averageBrightness(of: image)
-        // 0.05-0.7 is "reasonable" exposure range
-        if brightness < 0.05 || brightness > 0.95 { return 0.2 }
-        return min(1.0, (brightness / 0.7) * 0.8 + 0.2)
-    }
+    // ─── Quality Score ────────────────────────────────────────────────────────
 
     private func averageBrightness(of cgImage: CGImage) -> Double {
         guard let gray = grayscale(cgImage: cgImage),
@@ -207,10 +208,6 @@ actor MLAnalysisService {
         var total: UInt64 = 0
         for i in 0..<count { total += UInt64(ptr[i]) }
         return Double(total) / (Double(count) * 255.0)
-    }
-
-    private func detectDark(image: CGImage) -> Bool {
-        averageBrightness(of: image) < 0.10
     }
 
     // ─── Feature Print for Duplicate Clustering ───────────────────────────────

@@ -142,8 +142,8 @@ final class CombatViewModel {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.45, execute: resetItem)
 
         // Process after brief delay (card flying off)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-            self.processDecision(assetID: assetID, isDelete: isDelete, hero: hero, appState: appState)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { [weak self] in
+            self?.processDecision(assetID: assetID, isDelete: isDelete, hero: hero, appState: appState)
         }
     }
 
@@ -175,8 +175,8 @@ final class CombatViewModel {
 
             if session.combo >= 5 {
                 showComboFlash = true
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
-                    self.showComboFlash = false
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) { [weak self] in
+                    self?.showComboFlash = false
                 }
             }
 
@@ -237,15 +237,15 @@ final class CombatViewModel {
         withAnimation(.interpolatingSpring(stiffness: 500, damping: 10)) {
             monsterShakeOffset = CGSize(width: -15, height: 0)
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.08) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.08) { [weak self] in
             withAnimation(.interpolatingSpring(stiffness: 500, damping: 10)) {
-                self.monsterShakeOffset = CGSize(width: 12, height: 0)
+                self?.monsterShakeOffset = CGSize(width: 12, height: 0)
             }
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.16) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.16) { [weak self] in
             withAnimation(.spring()) {
-                self.monsterShakeOffset = .zero
-                self.isAnimatingDamage = false
+                self?.monsterShakeOffset = .zero
+                self?.isAnimatingDamage = false
             }
         }
     }
@@ -255,10 +255,10 @@ final class CombatViewModel {
         withAnimation(.interpolatingSpring(stiffness: 600, damping: 8)) {
             heroShakeOffset = CGSize(width: 10, height: -5)
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
             withAnimation(.spring()) {
-                self.heroShakeOffset = .zero
-                self.isAnimatingHeroDamage = false
+                self?.heroShakeOffset = .zero
+                self?.isAnimatingHeroDamage = false
             }
         }
     }
@@ -266,16 +266,16 @@ final class CombatViewModel {
     private func showXPPopup(_ text: String) {
         xpGainText = text
         showXPGain = true
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
-            self.showXPGain = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { [weak self] in
+            self?.showXPGain = false
         }
     }
 
     private func showAttackLinePopup(_ text: String) {
         attackLineText = text
         showAttackLine = true
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.8) {
-            self.showAttackLine = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.8) { [weak self] in
+            self?.showAttackLine = false
         }
     }
 }

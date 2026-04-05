@@ -41,19 +41,36 @@ final class PhotoLibraryService {
 
     func loadImage(for asset: PHAsset, targetSize: CGSize = CGSize(width: 800, height: 800)) async -> UIImage? {
         await withCheckedContinuation { continuation in
-            let manager = PHImageManager.default()
             let opts = PHImageRequestOptions()
             opts.isSynchronous = false
             opts.deliveryMode = .highQualityFormat
             opts.resizeMode = .fast
             opts.isNetworkAccessAllowed = false  // on-device only
-            manager.requestImage(for: asset, targetSize: targetSize,
-                                 contentMode: .aspectFit, options: opts) { image, info in
+            var resumed = false
+            PHImageManager.default().requestImage(
+                for: asset, targetSize: targetSize,
+                contentMode: .aspectFit, options: opts
+            ) { image, info in
                 let isDegraded = (info?[PHImageResultIsDegradedKey] as? Bool) ?? false
-                if !isDegraded {
+                let cancelled  = (info?[PHImageCancelledKey] as? Bool) ?? false
+                let failed     = info?[PHImageErrorKey] != nil
+
+                if !isDegraded && !resumed {
+                    resumed = true
                     continuation.resume(returning: image)
+                } else if (cancelled || failed) && !resumed {
+                    resumed = true
+                    continuation.resume(returning: nil)
+                } else if isDegraded && !resumed {
+                    // iCloud asset not downloaded locally — fall back to degraded after
+                    // a short grace period in case full-res arrives first.
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        if !resumed {
+                            resumed = true
+                            continuation.resume(returning: image)
+                        }
+                    }
                 }
-                // if degraded a second call will come; ignore first
             }
         }
     }

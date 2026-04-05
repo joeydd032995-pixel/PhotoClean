@@ -437,8 +437,12 @@ struct DungeonErrorBanner: View {
                 .foregroundStyle(.white)
             Spacer()
             Button(action: dismiss) {
-                Image(systemName: "xmark").foregroundStyle(.secondary)
+                Image(systemName: "xmark")
+                    .foregroundStyle(.secondary)
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
             }
+            .accessibilityLabel("Dismiss error")
         }
         .padding()
         .background(Color(hex: "#1A1A2E"))

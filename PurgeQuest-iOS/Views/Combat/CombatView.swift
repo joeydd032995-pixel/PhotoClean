@@ -180,9 +180,11 @@ struct CombatTopHUD: View {
                     Image(systemName: "arrow.uturn.left")
                         .foregroundStyle(.secondary)
                         .font(.title3)
-                        .padding(10)
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
                         .background(Circle().fill(Color.white.opacity(0.08)))
                 }
+                .accessibilityLabel("Exit dungeon")
 
                 Spacer()
 
