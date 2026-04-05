@@ -21,7 +21,7 @@ function validateEnv() {
   } catch (error) {
     if (error instanceof z.ZodError) {
       console.error("❌ Environment variable validation failed:");
-      error.issues.forEach((err: any) => {
+      error.issues.forEach((err: z.ZodIssue) => {
         console.error(`  - ${err.path.join(".")}: ${err.message}`);
       });
       console.error("\nPlease check your .env file and ensure all required variables are set.");

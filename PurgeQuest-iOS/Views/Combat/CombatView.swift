@@ -69,7 +69,7 @@ struct CombatView: View {
                     .gesture(
                         DragGesture()
                             .onChanged { combatVM.onDragChanged($0) }
-                            .onEnded { combatVM.onDragEnded($0, hero: hero, appState: appState, modelContext: modelContext) }
+                            .onEnded { combatVM.onDragEnded($0, hero: hero, appState: appState) }
                     )
 
                     // Swipe burst effects

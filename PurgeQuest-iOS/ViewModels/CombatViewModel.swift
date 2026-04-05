@@ -102,7 +102,7 @@ final class CombatViewModel {
         swipeRotation = Double(value.translation.width / 20)
     }
 
-    func onDragEnded(_ value: DragGesture.Value, hero: Hero, appState: AppState, modelContext: Any) {
+    func onDragEnded(_ value: DragGesture.Value, hero: Hero, appState: AppState) {
         let threshold: CGFloat = 90
         if value.translation.width < -threshold {
             commitSwipe(direction: .left, hero: hero, appState: appState)

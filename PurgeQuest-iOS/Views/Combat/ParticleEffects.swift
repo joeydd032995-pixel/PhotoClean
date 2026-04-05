@@ -56,8 +56,10 @@ struct ParticleBurstView: View {
                 for spec in specs {
                     let x = cx + CGFloat(cos(spec.angle)) * spec.speed * t
                     let y = cy + CGFloat(sin(spec.angle)) * spec.speed * t + 180 * t * t   // gravity
-                    let fade = pow(Double(1 - progress), 1.8)
                     let r = max(0.5, spec.radius * (1 - progress * 0.4))
+                    // Skip particles that have left the view bounds
+                    guard x + r >= 0, x - r <= size.width, y + r >= 0, y - r <= size.height else { continue }
+                    let fade = pow(Double(1 - progress), 1.8)
                     ctx.opacity = fade
                     ctx.fill(
                         Path(ellipseIn: CGRect(x: x - r, y: y - r, width: r * 2, height: r * 2)),

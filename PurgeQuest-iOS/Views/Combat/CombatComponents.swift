@@ -12,6 +12,7 @@ struct MonsterView: View {
 
     @State private var idle = false
     @State private var enragePulse = false
+    @State private var damageOffsetX: CGFloat = 0
 
     var body: some View {
         VStack(spacing: 8) {
@@ -97,7 +98,7 @@ struct MonsterView: View {
                     Text("-1")
                         .font(.custom("Georgia Bold", size: 22))
                         .foregroundStyle(.red)
-                        .offset(x: CGFloat.random(in: -20...20), y: -50)
+                        .offset(x: damageOffsetX, y: -50)
                         .transition(.asymmetric(
                             insertion: .scale(scale: 0.5).combined(with: .opacity),
                             removal: .move(edge: .top).combined(with: .opacity)
@@ -112,6 +113,9 @@ struct MonsterView: View {
         }
         .onChange(of: isDying) { _, dying in
             if dying { idle = false }
+        }
+        .onChange(of: isAnimatingDamage) { _, animating in
+            if animating { damageOffsetX = CGFloat.random(in: -20...20) }
         }
         .animation(.default, value: attackLine)
         .animation(.spring(), value: isAnimatingDamage)

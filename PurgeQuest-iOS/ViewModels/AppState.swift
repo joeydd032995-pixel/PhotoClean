@@ -48,43 +48,20 @@ final class AppState {
         isDungeonLoading = true
         dungeonLoadError = nil
 
-        // Check authorization
-        let status = await PhotoLibraryService.shared.requestAuthorization()
-        photoAuthStatus = status
-        guard status == .authorized || status == .limited else {
-            dungeonLoadError = "Photo library access is required to enter the dungeon."
+        guard let batch = await fetchValidatedAssets(hero: hero) else {
             isDungeonLoading = false
             return
         }
 
         hero.updateStreak()
 
-        // Fetch assets
-        let result = PhotoLibraryService.shared.fetchAllPhotoAssets()
-        var assets: [PHAsset] = []
-        result.enumerateObjects { asset, _, _ in assets.append(asset) }
-
-        guard !assets.isEmpty else {
-            dungeonLoadError = "Your photo library is empty. Nothing to purge!"
-            isDungeonLoading = false
-            return
-        }
-
-        // Shuffle for variety
-        assets.shuffle()
-        let batch = Array(assets.prefix(150))   // analyze up to 150 per session
-
-        // ML grouping
         let groups = await MLAnalysisService.shared.analyzeAndGroup(assets: batch)
-
-        // Build rooms (15–25 photos each)
         dungeonRooms = buildRooms(from: groups, hero: hero)
         currentRoomIndex = 0
         sessionPhotosDeleted = 0
         sessionBytesFreed = 0
         sessionXPEarned = 0
 
-        // Fetch library stats in background
         Task.detached(priority: .background) {
             let stats = await PhotoLibraryService.shared.totalLibraryStats()
             await MainActor.run { self.libraryStats = stats }
@@ -98,6 +75,26 @@ final class AppState {
             isDungeonLoading = false
             dungeonLoadError = "No photos to clean! Your dungeon is clear."
         }
+    }
+
+    /// Requests photo authorization, fetches and shuffles assets, returns nil (and sets dungeonLoadError) on failure.
+    private func fetchValidatedAssets(hero: Hero) async -> [PHAsset]? {
+        let status = await PhotoLibraryService.shared.requestAuthorization()
+        photoAuthStatus = status
+        guard status == .authorized || status == .limited else {
+            dungeonLoadError = "Photo library access is required to enter the dungeon."
+            return nil
+        }
+        var assets: [PHAsset] = []
+        PhotoLibraryService.shared.fetchAllPhotoAssets().enumerateObjects { asset, _, _ in
+            assets.append(asset)
+        }
+        guard !assets.isEmpty else {
+            dungeonLoadError = "Your photo library is empty. Nothing to purge!"
+            return nil
+        }
+        assets.shuffle()
+        return Array(assets.prefix(150))
     }
 
     private func buildRooms(from groups: [PhotoGroup], hero: Hero) -> [DungeonRoom] {
