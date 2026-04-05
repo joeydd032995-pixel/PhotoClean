@@ -248,6 +248,8 @@ struct OnboardingPermissionPage: View {
                     }
                     .font(.custom("Georgia Bold", size: 15))
                     .foregroundStyle(Color(hex: "#F7C948"))
+                    .frame(minHeight: 44)
+                    .contentShape(Rectangle())
                 }
             }
 

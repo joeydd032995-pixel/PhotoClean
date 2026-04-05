@@ -191,7 +191,7 @@ struct CombatTopHUD: View {
                 // Room info
                 VStack(spacing: 2) {
                     Text("Room \(room.roomNumber)")
-                        .font(.custom("Georgia Bold", size: 14))
+                        .font(.custom("Georgia Bold", size: 14, relativeTo: .caption))
                         .foregroundStyle(.white)
                     Text("\(room.photosDecided)/\(room.totalPhotos) photos")
                         .font(.caption2)
@@ -304,14 +304,14 @@ struct SwipeHintsRow: View {
     var body: some View {
         HStack {
             Label("DELETE", systemImage: "trash.fill")
-                .font(.custom("Georgia Bold", size: 13))
+                .font(.custom("Georgia Bold", size: 13, relativeTo: .body))
                 .foregroundStyle(Color(hex: "#E84545").opacity(0.8))
                 .padding(.horizontal, 16)
 
             Spacer()
 
             Label("KEEP", systemImage: "heart.fill")
-                .font(.custom("Georgia Bold", size: 13))
+                .font(.custom("Georgia Bold", size: 13, relativeTo: .body))
                 .foregroundStyle(Color(hex: "#4CAF50").opacity(0.8))
                 .padding(.horizontal, 16)
         }
@@ -326,7 +326,7 @@ struct XPGainPopup: View {
 
     var body: some View {
         Text(text)
-            .font(.custom("Georgia Bold", size: 18))
+            .font(.custom("Georgia Bold", size: 18, relativeTo: .title3))
             .foregroundStyle(Color(hex: "#F7C948"))
             .shadow(color: Color(hex: "#F7C948"), radius: 6)
             .offset(y: offset)
@@ -344,11 +344,11 @@ struct ComboFlashView: View {
     var body: some View {
         VStack(spacing: 4) {
             Text("COMBO!")
-                .font(.custom("Georgia Bold", size: 28))
+                .font(.custom("Georgia Bold", size: 28, relativeTo: .title))
                 .foregroundStyle(Color(hex: "#F7C948"))
                 .shadow(color: Color(hex: "#F7C948"), radius: 12)
             Text("×\(combo)")
-                .font(.custom("Georgia Bold", size: 48))
+                .font(.custom("Georgia Bold", size: 48, relativeTo: .largeTitle))
                 .foregroundStyle(.white)
         }
         .padding(20)

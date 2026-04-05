@@ -380,6 +380,7 @@ struct EnterDungeonButton: View {
                 }
             }
             .frame(height: 72)
+            .contentShape(Rectangle())
             .shadow(color: Color(hex: "#F7C948").opacity(0.4), radius: 16, y: 6)
         }
         .buttonStyle(.plain)

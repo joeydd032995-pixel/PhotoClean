@@ -281,6 +281,7 @@ struct PrivacyPolicyView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") { dismiss() }
                         .foregroundStyle(Color(hex: "#F7C948"))
+                        .accessibilityLabel("Close privacy policy")
                 }
             }
         }

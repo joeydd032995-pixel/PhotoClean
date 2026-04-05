@@ -175,7 +175,7 @@ struct CategoryChip: View {
                 .font(.custom("Georgia Bold", size: 13))
                 .foregroundStyle(isSelected ? .black : .white)
                 .padding(.horizontal, 16)
-                .padding(.vertical, 8)
+                .frame(minHeight: 44)
                 .background(
                     Capsule()
                         .fill(isSelected ? Color(hex: "#F7C948") : Color.white.opacity(0.1))

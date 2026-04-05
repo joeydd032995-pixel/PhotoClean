@@ -66,8 +66,8 @@ struct CosmeticShopView: View {
                                         .font(.custom("Georgia Bold", size: 13))
                                 }
                                 .foregroundStyle(selectedType == type ? .black : .white)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 14)
+                                .frame(maxWidth: .infinity, minHeight: 44)
+                                .contentShape(Rectangle())
                                 .background(
                                     selectedType == type
                                     ? AnyView(LinearGradient(
