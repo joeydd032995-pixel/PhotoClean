@@ -31,7 +31,7 @@ struct SettingsView: View {
                     Section("Battle Statistics") {
                         SettingsStatRow(label: "Total Photos Deleted", value: "\(hero.totalPhotosDeleted)")
                         SettingsStatRow(label: "Total Photos Spared", value: "\(hero.totalPhotosSpared)")
-                        SettingsStatRow(label: "Storage Freed", value: formatBytes(hero.totalBytesDeleted))
+                        SettingsStatRow(label: "Storage Freed", value: hero.totalBytesDeleted.formattedBytes())
                         SettingsStatRow(label: "Bosses Defeated", value: "\(hero.bossesDefeated)")
                         SettingsStatRow(label: "Highest Combo", value: "×\(hero.highestCombo)")
                         SettingsStatRow(label: "Dungeon Floor", value: "\(hero.dungeonFloor)")
@@ -145,13 +145,6 @@ struct SettingsView: View {
         UserDefaults.standard.removeObject(forKey: "pq_onboarding_v1")
     }
 
-    private func formatBytes(_ bytes: Int64) -> String {
-        let gb = Double(bytes) / 1_073_741_824
-        if gb >= 1 { return String(format: "%.2f GB", gb) }
-        let mb = Double(bytes) / 1_048_576
-        if mb >= 0.1 { return String(format: "%.1f MB", mb) }
-        return "\(bytes) B"
-    }
 }
 
 struct HeroSummaryRow: View {
@@ -314,7 +307,6 @@ struct PrivacySection: View {
 
 struct LevelUpView: View {
     let level: Int
-    let hero: Hero
     @Environment(\.dismiss) private var dismiss
     @State private var animateIcon = false
     @State private var showStats = false

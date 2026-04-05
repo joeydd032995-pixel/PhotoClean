@@ -98,7 +98,7 @@ struct MainTabView: View {
             }
         }
         .sheet(isPresented: $appState.showLevelUp) {
-            LevelUpView(level: hero.level, hero: hero)
+            LevelUpView(level: hero.level)
                 .presentationDetents([.medium])
                 .presentationBackground(.ultraThinMaterial)
         }

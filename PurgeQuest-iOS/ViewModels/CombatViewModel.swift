@@ -28,6 +28,7 @@ final class CombatViewModel {
 
     private var preloadedNextImage: UIImage? = nil
     private var imageLoadTask: Task<Void, Never>? = nil
+    private var burstResetItem: DispatchWorkItem? = nil
 
     // ─── Particle / visual effect triggers ────────────────────────────────────
     var isMonsterDying: Bool = false
@@ -58,6 +59,7 @@ final class CombatViewModel {
 
     deinit {
         imageLoadTask?.cancel()
+        burstResetItem?.cancel()
     }
 
     // ─── Image Loading ─────────────────────────────────────────────────────────
@@ -129,12 +131,15 @@ final class CombatViewModel {
             swipeRotation = isDelete ? -20 : 20
         }
 
-        // Fire swipe burst at the moment the card starts flying off
+        // Fire swipe burst; cancel any pending reset so rapid swipes don't clear early
+        burstResetItem?.cancel()
         if isDelete { showDeleteBurst = true } else { showKeepBurst = true }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
-            self.showDeleteBurst = false
-            self.showKeepBurst = false
+        let resetItem = DispatchWorkItem { [weak self] in
+            self?.showDeleteBurst = false
+            self?.showKeepBurst = false
         }
+        burstResetItem = resetItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.45, execute: resetItem)
 
         // Process after brief delay (card flying off)
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {

@@ -110,6 +110,9 @@ struct MonsterView: View {
             idle = true
             enragePulse = true
         }
+        .onChange(of: isDying) { _, dying in
+            if dying { idle = false }
+        }
         .animation(.default, value: attackLine)
         .animation(.spring(), value: isAnimatingDamage)
     }
@@ -279,7 +282,7 @@ struct RoomSummaryView: View {
                         HStack(spacing: 8) {
                             Image(systemName: "externaldrive.fill")
                                 .foregroundStyle(Color(hex: "#4CAF50"))
-                            Text("Storage freed: \(formatBytes(bytesIfDeleted))")
+                            Text("Storage freed: \(bytesIfDeleted.formattedBytes())")
                                 .font(.custom("Georgia Bold", size: 16))
                                 .foregroundStyle(Color(hex: "#4CAF50"))
                         }
@@ -368,17 +371,10 @@ struct RoomSummaryView: View {
             }
             Button("Not Yet", role: .cancel) {}
         } message: {
-            Text("This will permanently delete \(toDelete.count) photos, freeing \(formatBytes(bytesIfDeleted)). You have 7 days to request a review before they are removed from your device.\n\nNote: iOS may ask for your confirmation again.")
+            Text("This will permanently delete \(toDelete.count) photos, freeing \(bytesIfDeleted.formattedBytes()). You have 7 days to request a review before they are removed from your device.\n\nNote: iOS may ask for your confirmation again.")
         }
     }
 
-    private func formatBytes(_ bytes: Int64) -> String {
-        let gb = Double(bytes) / 1_073_741_824
-        if gb >= 1 { return String(format: "%.2f GB", gb) }
-        let mb = Double(bytes) / 1_048_576
-        if mb >= 1 { return String(format: "%.0f MB", mb) }
-        return "\(bytes) B"
-    }
 }
 
 struct LootItem: View {

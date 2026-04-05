@@ -216,7 +216,7 @@ struct StorageMeterCard: View {
                     .font(.custom("Georgia Bold", size: 16))
                     .foregroundStyle(.white)
                 Spacer()
-                Text(formatBytes(hero.totalBytesDeleted))
+                Text(hero.totalBytesDeleted.formattedBytes())
                     .font(.custom("Georgia Bold", size: 22))
                     .foregroundStyle(Color(hex: "#4CAF50"))
             }
@@ -255,13 +255,6 @@ struct StorageMeterCard: View {
         .padding(.horizontal, 20)
     }
 
-    private func formatBytes(_ bytes: Int64) -> String {
-        let gb = Double(bytes) / 1_073_741_824
-        if gb >= 1 { return String(format: "%.2f GB", gb) }
-        let mb = Double(bytes) / 1_048_576
-        if mb >= 1 { return String(format: "%.0f MB", mb) }
-        return "\(bytes) B"
-    }
 }
 
 // ─── Daily Quests Card ────────────────────────────────────────────────────────
